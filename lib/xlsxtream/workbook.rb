@@ -80,6 +80,23 @@ module Xlsxtream
     end
     alias_method :add_worksheet, :write_worksheet
 
+    def new_worksheet(name = nil, options={})
+      if name.is_a? Hash and options.empty?
+        options = name
+        name = nil
+      end
+      use_sst = options.fetch(:use_shared_strings, @options[:use_shared_strings])
+      auto_format = options.fetch(:auto_format, @options[:auto_format])
+      columns = options.fetch(:columns, @options[:columns])
+      sst = use_sst ? @sst : nil
+
+      name = name || options[:name] || "Sheet#{@worksheets.size + 1}"
+      sheet_id = @worksheets[name]
+      @io.add_file "xl/worksheets/sheet#{sheet_id}.xml"
+
+      worksheet = Worksheet.new(@io, :sst => sst, :auto_format => auto_format, :columns => columns)
+    end
+
     def close
       write_workbook
       write_styles
